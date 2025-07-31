@@ -558,16 +558,29 @@ require('lazy').setup({
       --    function will be executed to configure the current buffer
       --
       --
+      --
+      local tsdk_path = vim.fn.getcwd() .. '/.yarn/sdks/typescript/lib'
+      local vue_plugin_path = vim.fn.glob(vim.fn.getcwd() .. '/.yarn/unplugged/@vue-typescript-plugin-*/node_modules/@vue/typescript-plugin', 1, 1)[1]
 
-      local vue_language_server = vim.fn.expand '$MASON/packages' .. '/vue-language-server' .. '/node_modules/@vue/language-server'
-
-      local lspconfig = require 'lspconfig'
-
-      lspconfig.volar.setup {
-        filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
+      require('lspconfig').ts_ls.setup {
+        capabilities = capabilities,
+        filetypes = { 'typescript', 'javascript', 'javascriptreact', 'vue' },
         init_options = {
-          vue = {
-            hybridMode = false,
+          hostInfo = 'neovim',
+          plugins = {
+            {
+              name = '@vue/typescript-plugin',
+              location = vue_plugin_path,
+              languages = { 'vue' },
+            },
+          },
+        },
+        settings = {
+          typescript = {
+            tsdk = tsdk_path,
+          },
+          javascript = {
+            tsdk = tsdk_path,
           },
         },
       }
@@ -734,17 +747,6 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         --
-        ts_ls = {
-          capabilities = capabilities,
-          init_options = {
-            plugins = {
-              name = '@vue/typescript-plugin',
-              location = vue_language_server,
-              languages = { 'vue' },
-            },
-          },
-          filetypes = { 'typescript', 'javascript', 'javascriptreact', 'vue' },
-        },
 
         lua_ls = {
           -- cmd = { ... },
