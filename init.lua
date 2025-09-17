@@ -442,6 +442,9 @@ require('lazy').setup({
         --   },
         -- },
         -- pickers = {}
+        defaults = {
+          file_ignore_patterns = { '^build/' },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -559,8 +562,38 @@ require('lazy').setup({
       --
       --
       --
+      local eslint_path = '.yarn/sdks/eslint/bin/eslint.js'
       local tsdk_path = vim.fn.getcwd() .. '/.yarn/sdks/typescript/lib'
       local vue_plugin_path = vim.fn.glob(vim.fn.getcwd() .. '/.yarn/unplugged/@vue-typescript-plugin-*/node_modules/@vue/typescript-plugin', 1, 1)[1]
+
+      require('lspconfig').eslint.setup {
+        cmd = { 'node', eslint_path, '--stdio' },
+        root_dir = require('lspconfig.util').root_pattern('.eslintrc', '.eslintrc.js', '.eslintrc.json', 'package.json'),
+        on_attach = function(client, bufnr)
+          -- Optional: format on save
+          vim.api.nvim_create_autocmd('BufWritePre', {
+            buffer = bufnr,
+            callback = function()
+              vim.lsp.buf.format { bufnr = bufnr }
+            end,
+          })
+        end,
+        settings = {
+          -- ESLint-specific options
+          format = true,
+          packageManager = 'yarn',
+        },
+      }
+
+      local root_patterns = { '.git' }
+      local root_dir = vim.fs.dirname(vim.fs.find(root_patterns, { upward = true })[1])
+
+      require('lspconfig').sourcekit.setup {
+        cmd = { 'xcrun', 'sourcekit-lsp' },
+        filetypes = { 'swift', 'objective-c', 'objective-cpp' },
+        root_dir = require('lspconfig').util.root_pattern('buildServer.json', 'Package.swift', '.git', '*.xcworkspace', '*.xcodeproj'),
+        single_file_support = false,
+      }
 
       require('lspconfig').ts_ls.setup {
         capabilities = capabilities,
@@ -1008,7 +1041,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'swift', 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
