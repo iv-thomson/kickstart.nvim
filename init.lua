@@ -508,11 +508,6 @@ require('lazy').setup({
     },
   },
   {
-    'pmizio/typescript-tools.nvim',
-    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
-    opts = {},
-  },
-  {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -561,30 +556,6 @@ require('lazy').setup({
       --    function will be executed to configure the current buffer
       --
       --
-      --
-      local eslint_path = '.yarn/sdks/eslint/bin/eslint.js'
-      local tsdk_path = vim.fn.getcwd() .. '/.yarn/sdks/typescript/lib'
-      local vue_plugin_path = vim.fn.glob(vim.fn.getcwd() .. '/.yarn/unplugged/@vue-typescript-plugin-*/node_modules/@vue/typescript-plugin', 1, 1)[1]
-
-      require('lspconfig').eslint.setup {
-        cmd = { 'node', eslint_path, '--stdio' },
-        root_dir = require('lspconfig.util').root_pattern('.eslintrc', '.eslintrc.js', '.eslintrc.json', 'package.json'),
-        on_attach = function(client, bufnr)
-          -- Optional: format on save
-          vim.api.nvim_create_autocmd('BufWritePre', {
-            buffer = bufnr,
-            callback = function()
-              vim.lsp.buf.format { bufnr = bufnr }
-            end,
-          })
-        end,
-        settings = {
-          -- ESLint-specific options
-          format = true,
-          packageManager = 'yarn',
-        },
-      }
-
       local root_patterns = { '.git' }
       local root_dir = vim.fs.dirname(vim.fs.find(root_patterns, { upward = true })[1])
 
@@ -593,29 +564,6 @@ require('lazy').setup({
         filetypes = { 'swift', 'objective-c', 'objective-cpp' },
         root_dir = require('lspconfig').util.root_pattern('buildServer.json', 'Package.swift', '.git', '*.xcworkspace', '*.xcodeproj'),
         single_file_support = false,
-      }
-
-      require('lspconfig').ts_ls.setup {
-        capabilities = capabilities,
-        filetypes = { 'typescript', 'javascript', 'javascriptreact', 'vue' },
-        init_options = {
-          hostInfo = 'neovim',
-          plugins = {
-            {
-              name = '@vue/typescript-plugin',
-              location = vue_plugin_path,
-              languages = { 'vue' },
-            },
-          },
-        },
-        settings = {
-          typescript = {
-            tsdk = tsdk_path,
-          },
-          javascript = {
-            tsdk = tsdk_path,
-          },
-        },
       }
 
       vim.api.nvim_create_autocmd('LspAttach', {
@@ -631,29 +579,11 @@ require('lazy').setup({
             vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
           end
 
-          -- Rename the variable under your cursor.
-          --  Most Language Servers support renaming across files, etc.
-          map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
-
-          -- Execute a code action, usually your cursor needs to be on top of an error
-          -- or a suggestion from your LSP for this to activate.
-          map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]ction', { 'n', 'x' })
-
-          -- Find references for the word under your cursor.
-          map('grr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-
-          -- Jump to the implementation of the word under your cursor.
-          --  Useful when your language has ways of declaring types without an actual implementation.
-          map('gri', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-
-          -- Jump to the definition of the word under your cursor.
-          --  This is where a variable was first declared, or where a function is defined, etc.
-          --  To jump back, press <C-t>.
-          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
           map('grD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+
+          map('grd', vim.lsp.buf.definition, '[G]oto [D]efinition')
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
@@ -870,6 +800,8 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'eslint', 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'eslint', 'prettierd', 'prettier', stop_after_first = true },
+        vue = { 'eslint', 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
