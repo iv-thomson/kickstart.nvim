@@ -26,50 +26,36 @@ return {
     end
 
     local tsserver_filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' }
-    local vue_plugin = {
-        name = "@vue/typescript-plugin",
-        location = "~/.npm-global/lib/node_modules/@vue/language-server",
-        languages = { "vue" },
-    }
-    vim.lsp.config('tsserver', {
-      capabilities = capabilities,
-      on_attach = lsp_keymaps,
-      -- links to global language server
-      cmd = { "typescript-language-server", "--stdio" }
-      -- Uncomment for local setup (needs to be install locally)
-      -- cmd = { "yarn", "typescript-language-server", "--stdio" };
-    })
+local vue_plugin = {
+  name = '@vue/typescript-plugin',
+  location = vim.fn.expand('~/.npm-global/lib/node_modules/@vue/language-server'),
+  languages = { 'vue' },
+  configNamespace = 'typescript',
+}
 
-    vim.lsp.config('vtsls', {
-      capabilities = capabilities,
-      on_attach = lsp_keymaps,
-      filetypes = { 'vue' },
-      settings = {
-        vtsls = {
-          tsserver = {
-            globalPlugins = {
-              vue_plugin,
-            },
-         },
-        },
+vim.lsp.config('vtsls', {
+  capabilities = capabilities,
+  on_attach = lsp_keymaps,
+  filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
+  settings = {
+    vtsls = {
+      tsserver = {
+        globalPlugins = { vue_plugin },
       },
-    })
+    },
+  },
+})
 
-    vim.lsp.config('vue_ls', {
-        capabilities = capabilities,
-        on_attach = lsp_keymaps,
-    })
+vim.lsp.config('vue_ls', {
+  capabilities = capabilities,
+  on_attach = lsp_keymaps,
+})
 
-    vim.lsp.config('sourcekit', {
-      capabilities = capabilities,
-      on_attach = lsp_keymaps,
-    })
-
-    vim.lsp.enable {
-      'tsserver',
-      'vtsls',
-      'vue_ls',
-      'sourcekit',
-    }
+vim.lsp.enable {
+  'vtsls',   -- replaces tsserver
+  'vue_ls',
+  'sourcekit',
+  'groovyls',
+}
   end,
 }
